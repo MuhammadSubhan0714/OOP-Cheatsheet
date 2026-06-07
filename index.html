@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OOP C++ Reference — CS1004</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #111318;
+  --bg2:     #181b22;
+  --bg3:     #1e2230;
+  --bg4:     #252a38;
+  --surface: #2a3045;
+  --border:  #2e3448;
+  --border2: #3d4560;
+  --text:    #dce4f5;
+  --muted:   #7a86a8;
+  --faint:   #454f6e;
+  --amber:   #f5a623;
+  --amber2:  #ffc857;
+  --teal:    #3ecfb2;
+  --blue:    #5b9cf6;
+  --green:   #5ddb8d;
+  --coral:   #ff6b6b;
+  --purple:  #c084fc;
+  --pink:    #f472b6;
+  --mono:    'Fira Code', monospace;
+  --serif:   'Playfair Display', Georgia, serif;
+  --sans:    'Lato', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── subtle grid texture ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─────────────────────── LAYOUT ─────────────────────── */
+.shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-logo {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .title {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--amber);
+  line-height: 1.2;
+}
+.sidebar-logo .subtitle {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.nav-section { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.nav-section-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 0 1.25rem 0.4rem;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.12s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  border-left: 2px solid transparent;
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active { color: var(--amber); border-left-color: var(--amber); background: rgba(245,166,35,0.07); }
+.nav-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--faint);
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.nav-link.active .nav-dot { background: var(--amber); }
+
+/* MAIN */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 2.5rem 5rem;
+  max-width: 860px;
+}
+
+/* ─────────────────────── PAGE HEADER ─────────────────────── */
+.page-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 80px; height: 2px;
+  background: linear-gradient(90deg, var(--amber), transparent);
+}
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.2;
+}
+.page-header p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 6px;
+  font-family: var(--mono);
+}
+
+/* ─────────────────────── SECTIONS ─────────────────────── */
+.section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 1rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--amber);
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.25);
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--text);
+}
+.section-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-left: auto;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.concept-intro {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  background: var(--bg2);
+  border-left: 3px solid var(--border2);
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+}
+.concept-intro strong { color: var(--text); font-weight: 700; }
+.concept-intro code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: var(--bg4);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--amber);
+}
+
+/* ─────────────────────── TRAPS ─────────────────────── */
+.trap {
+  background: rgba(255,107,107,0.06);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-left: 3px solid var(--coral);
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #ff9999;
+  margin: 0.75rem 0;
+  font-family: var(--mono);
+  line-height: 1.7;
+}
+.trap .trap-hd {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 3px;
+  color: var(--coral);
+  font-weight: 600;
+}
+
+.tip {
+  background: rgba(93,219,141,0.06);
+  border: 1px solid rgba(93,219,141,0.2);
+  border-left: 3px solid var(--green);
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #8ef5b0;
+  margin: 0.75rem 0;
+  font-family: var(--mono);
+  line-height: 1.7;
+}
+.tip .tip-hd {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 3px;
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* ─────────────────────── CODE BLOCKS ─────────────────────── */
+.code-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.75rem 0;
+  font-size: 0.79rem;
+}
+.code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.code-dots { display: flex; gap: 5px; }
+.cd { width: 9px; height: 9px; border-radius: 50%; }
+.cd.r { background: #ff5f57; }
+.cd.y { background: #febc2e; }
+.cd.g { background: #28c840; }
+.code-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--faint);
+  letter-spacing: 0.5px;
+}
+.copy-btn {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--faint);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.copy-btn:hover { color: var(--amber); border-color: rgba(245,166,35,0.4); }
+.copy-btn.copied { color: var(--green); border-color: rgba(93,219,141,0.4); }
+
+pre.code {
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre;
+  font-family: var(--mono);
+  font-size: 0.79rem;
+}
+pre.code::-webkit-scrollbar { height: 4px; }
+pre.code::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* syntax tokens */
+.kw  { color: #c792ea; font-weight: 500; }
+.tp  { color: var(--teal); }
+.fn  { color: #82aaff; }
+.str { color: #c3e88d; }
+.num { color: #f78c6c; }
+.cm  { color: #546e7a; font-style: italic; }
+.op  { color: var(--amber); }
+.cls { color: #ffcb6b; }
+.pp  { color: #89ddff; }   /* preprocessor */
+.hi  { background: rgba(245,166,35,0.12); border-radius: 2px; }  /* highlight line */
+
+/* ─────────────────────── TABS (inside a section) ─────────────────────── */
+.tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  padding: 5px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.12s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.on { background: var(--bg); color: var(--amber); border-color: var(--border); border-bottom-color: var(--bg); z-index: 1; }
+
+.tab-pane { display: none; }
+.tab-pane.on { display: block; }
+.tab-pane .code-wrap { border-radius: 0 8px 8px 8px; margin-top: 0; }
+
+/* ─────────────────────── DIFF VIEW ─────────────────────── */
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0.75rem 0; }
+@media (max-width: 700px) { .diff-grid { grid-template-columns: 1fr; } }
+.diff-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border-radius: 3px 3px 0 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.diff-label.bad  { background: rgba(255,107,107,0.15); color: var(--coral); }
+.diff-label.good { background: rgba(93,219,141,0.15);  color: var(--green); }
+.diff-grid .code-wrap { margin: 0; border-radius: 0 8px 8px 8px; }
+
+/* ─────────────────────── MINI TABLE ─────────────────────── */
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  margin: 0.75rem 0;
+}
+.ref-table th {
+  background: var(--bg3);
+  color: var(--amber);
+  padding: 7px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border2);
+}
+.ref-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.ref-table td:first-child { color: var(--text); }
+.ref-table tr:hover td { background: var(--bg2); }
+
+/* ─────────────────────── ANIMATIONS ─────────────────────── */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section { animation: fadeSlide 0.35s ease both; }
+.section:nth-child(2)  { animation-delay: 0.04s; }
+.section:nth-child(3)  { animation-delay: 0.08s; }
+.section:nth-child(4)  { animation-delay: 0.12s; }
+.section:nth-child(5)  { animation-delay: 0.16s; }
+.section:nth-child(6)  { animation-delay: 0.20s; }
+.section:nth-child(7)  { animation-delay: 0.24s; }
+.section:nth-child(8)  { animation-delay: 0.28s; }
+.section:nth-child(9)  { animation-delay: 0.32s; }
+.section:nth-child(10) { animation-delay: 0.36s; }
+.section:nth-child(11) { animation-delay: 0.40s; }
+.section:nth-child(12) { animation-delay: 0.44s; }
+
+/* ─────────────────────── PRINT ─────────────────────── */
+@media print {
+  .sidebar { display: none; }
+  body::before { display: none; }
+  .main { padding: 1rem; max-width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══════════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">OOP C++<br>Reference</div>
+    <div class="subtitle">CS1004 · Final Prep</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Pointers</div>
+    <button class="nav-link" onclick="go('s-single')"><span class="nav-dot"></span>Single Pointer</button>
+    <button class="nav-link" onclick="go('s-double')"><span class="nav-dot"></span>Double Pointer</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Memory</div>
+    <button class="nav-link" onclick="go('s-deepcopy')"><span class="nav-dot"></span>Deep Copy</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Relationships</div>
+    <button class="nav-link" onclick="go('s-composition')"><span class="nav-dot"></span>Composition</button>
+    <button class="nav-link" onclick="go('s-aggr-ptr')"><span class="nav-dot"></span>Aggregation by Pointer</button>
+    <button class="nav-link" onclick="go('s-aggr-ref')"><span class="nav-dot"></span>Aggregation by Reference</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Friend</div>
+    <button class="nav-link" onclick="go('s-friend-fn')"><span class="nav-dot"></span>Friend Functions</button>
+    <button class="nav-link" onclick="go('s-friend-cls')"><span class="nav-dot"></span>Friend Classes</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Generics</div>
+    <button class="nav-link" onclick="go('s-templates')"><span class="nav-dot"></span>Templates</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">I/O</div>
+    <button class="nav-link" onclick="go('s-file-text')"><span class="nav-dot"></span>File Handling (Text)</button>
+    <button class="nav-link" onclick="go('s-file-bin')"><span class="nav-dot"></span>File Handling (Binary)</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Errors</div>
+    <button class="nav-link" onclick="go('s-exc')"><span class="nav-dot"></span>Exception Handling</button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Tricky Stuff</div>
+    <button class="nav-link" onclick="go('s-gotchas')"><span class="nav-dot"></span>Common Gotchas</button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════════════════ -->
+<main class="main" id="main-content">
+
+  <div class="page-header">
+    <h1>OOP C++ Reference Guide</h1>
+    <p>// CS1004 · Syntax, implementations, and the confusing parts — all in one place</p>
+  </div>
+
+
+<!-- ════════════ SINGLE POINTER ════════════ -->
+<section class="section" id="s-single">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Single Pointer</span>
+    <span class="section-tag">T*</span>
+  </div>
+  <div class="concept-intro">
+    A <strong>single pointer</strong> (<code>T*</code>) stores the memory address of one object. It can point to a single object or the first element of a heap-allocated array. Dereferencing with <code>*</code> gives the value; <code>-></code> accesses members of a pointed-to object.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">single_pointer.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="pp">#include &lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="kw">class</span> <span class="cls">Box</span> {
+<span class="kw">public</span>:
+    <span class="kw">int</span> value;
+    Box(<span class="kw">int</span> v) : value(v) { cout &lt;&lt; <span class="str">"Box("</span> &lt;&lt; v &lt;&lt; <span class="str">) created\n"</span>; }
+    ~Box()                { cout &lt;&lt; <span class="str">"Box("</span> &lt;&lt; value &lt;&lt; <span class="str">) destroyed\n"</span>; }
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="cm">// 1. Pointer to a single heap object</span>
+    Box* b = <span class="kw">new</span> Box(<span class="num">42</span>);      <span class="cm">// allocate</span>
+    cout &lt;&lt; b-&gt;value &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// access member via -></span>
+    cout &lt;&lt; (*b).value &lt;&lt; <span class="str">"\n"</span>;<span class="cm">// same, using dereference *</span>
+    <span class="kw">delete</span> b;                   <span class="cm">// free memory — always!</span>
+    b = <span class="kw">nullptr</span>;               <span class="cm">// good habit: null out after delete</span>
+
+    <span class="cm">// 2. Pointer to a heap-allocated array</span>
+    Box* arr = <span class="kw">new</span> Box[<span class="num">3</span>]{<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++)
+        cout &lt;&lt; arr[i].value &lt;&lt; <span class="str">" "</span>;
+    <span class="kw">delete</span>[] arr;              <span class="cm">// use delete[] for arrays!</span>
+
+    <span class="cm">// 3. Pointer to polymorphic object (most common in OOP)</span>
+    <span class="cm">// Base* ptr = new Derived();  // covered in polymorphism</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+  </div>
+
+  <div class="trap">
+    <div class="trap-hd">⚠ Common Mistakes</div>
+    <strong>delete</strong> vs <strong>delete[]</strong>: use <code>delete</code> for single objects, <code>delete[]</code> for arrays. Mixing them is undefined behaviour.<br>
+    After <code>delete</code>, the pointer is a "dangling pointer" — accessing it is UB. Always set to <code>nullptr</code>.<br>
+    <code>int* p;</code> (uninitialized) is not the same as <code>int* p = nullptr;</code> — the first is a wild pointer.
+  </div>
+</section>
+
+
+<!-- ════════════ DOUBLE POINTER ════════════ -->
+<section class="section" id="s-double">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Double Pointer</span>
+    <span class="section-tag">T**</span>
+  </div>
+  <div class="concept-intro">
+    A <strong>double pointer</strong> (<code>T**</code>) is a pointer to a pointer. Used for: (1) dynamic arrays of pointers (e.g. <code>Person**</code> as an array of Person objects), (2) 2D dynamic arrays, (3) passing a pointer by pointer so you can modify the original pointer. In OOP, it's most common as a polymorphic array.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="switchTab('dp', 'array', this)">Array of Pointers</button>
+    <button class="tab-btn" onclick="switchTab('dp', '2d', this)">2D Dynamic Array</button>
+    <button class="tab-btn" onclick="switchTab('dp', 'poly', this)">Polymorphic Array</button>
+  </div>
+
+  <div id="dp-array" class="tab-pane on">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">double_ptr_array.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// T** as a dynamic array of pointers</span>
+<span class="kw">class</span> <span class="cls">Student</span> {
+<span class="kw">public</span>:
+    string name;
+    Student(<span class="kw">const</span> string&amp; n) : name(n) {}
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">int</span> n = <span class="num">3</span>;
+
+    <span class="cm">// Allocate an array of n pointers</span>
+    Student** roster = <span class="kw">new</span> Student*[n];
+
+    <span class="cm">// Each pointer in the array points to its own heap object</span>
+    roster[<span class="num">0</span>] = <span class="kw">new</span> Student(<span class="str">"Ali"</span>);
+    roster[<span class="num">1</span>] = <span class="kw">new</span> Student(<span class="str">"Sara"</span>);
+    roster[<span class="num">2</span>] = <span class="kw">new</span> Student(<span class="str">"Hamza"</span>);
+
+    <span class="cm">// Access: dereference outer pointer to get Student*,</span>
+    <span class="cm">// then -> to get member</span>
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        cout &lt;&lt; roster[i]-&gt;name &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// roster[i] is Student*</span>
+
+    <span class="cm">// Cleanup: delete each inner object first, then outer array</span>
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        <span class="kw">delete</span> roster[i];
+    <span class="kw">delete</span>[] roster;
+}</pre>
+    </div>
+  </div>
+
+  <div id="dp-2d" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">double_ptr_2d.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// T** as a true 2D dynamic array (rows x cols)</span>
+<span class="kw">int</span> rows = <span class="num">3</span>, cols = <span class="num">4</span>;
+
+<span class="cm">// Step 1: allocate array of row-pointers</span>
+<span class="kw">int</span>** grid = <span class="kw">new int</span>*[rows];
+
+<span class="cm">// Step 2: allocate each row</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; rows; i++)
+    grid[i] = <span class="kw">new int</span>[cols];
+
+<span class="cm">// Use like a normal 2D array</span>
+grid[<span class="num">1</span>][<span class="num">2</span>] = <span class="num">99</span>;
+cout &lt;&lt; grid[<span class="num">1</span>][<span class="num">2</span>] &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// 99</span>
+
+<span class="cm">// Cleanup: delete each row first, then the pointer array</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; rows; i++)
+    <span class="kw">delete</span>[] grid[i];
+<span class="kw">delete</span>[] grid;</pre>
+    </div>
+  </div>
+
+  <div id="dp-poly" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">double_ptr_poly.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// T** for polymorphic arrays — the most common OOP use case</span>
+<span class="kw">class</span> <span class="cls">Person</span> {
+<span class="kw">public</span>:
+    <span class="kw">virtual void</span> display() <span class="kw">const</span> = <span class="num">0</span>;
+    <span class="kw">virtual</span> ~Person() {}
+};
+<span class="kw">class</span> <span class="cls">Doctor</span>  : <span class="kw">public</span> Person { <span class="kw">public void</span> display() <span class="kw">const override</span> { cout &lt;&lt; <span class="str">"Doctor\n"</span>;  } };
+<span class="kw">class</span> <span class="cls">Patient</span> : <span class="kw">public</span> Person { <span class="kw">public void</span> display() <span class="kw">const override</span> { cout &lt;&lt; <span class="str">"Patient\n"</span>; } };
+
+<span class="kw">void</span> <span class="fn">showAll</span>(Person** arr, <span class="kw">int</span> n) {
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        arr[i]-&gt;display();   <span class="cm">// virtual dispatch — correct override called</span>
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Person** staff = <span class="kw">new</span> Person*[<span class="num">2</span>];
+    staff[<span class="num">0</span>] = <span class="kw">new</span> Doctor();
+    staff[<span class="num">1</span>] = <span class="kw">new</span> Patient();
+    showAll(staff, <span class="num">2</span>);
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">2</span>; i++) <span class="kw">delete</span> staff[i];
+    <span class="kw">delete</span>[] staff;
+}</pre>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Cleanup Order</div>
+    Always delete the INNER objects first, then <code>delete[]</code> the outer pointer array. Reversing this order leaks every inner object.
+  </div>
+</section>
+
+
+<!-- ════════════ DEEP COPY ════════════ -->
+<section class="section" id="s-deepcopy">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Deep Copy</span>
+    <span class="section-tag">Rule of Three</span>
+  </div>
+  <div class="concept-intro">
+    When a class holds a <strong>pointer to heap memory</strong>, the compiler-generated copy constructor and assignment operator only copy the pointer value (shallow copy) — both objects now share the same heap memory. Modifying or deleting one corrupts the other. A <strong>deep copy</strong> allocates <em>new</em> memory and copies the content.
+    <br><br>
+    The <strong>Rule of Three</strong>: if you define any one of (destructor, copy constructor, copy assignment operator), define all three.
+  </div>
+
+  <div class="diff-grid">
+    <div>
+      <div class="diff-label bad">✗ Shallow Copy (default — dangerous)</div>
+      <div class="code-wrap">
+        <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">shallow.cpp</span></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Bad</span> {
+<span class="kw">public</span>:
+    <span class="kw">char</span>* name;
+    Bad(<span class="kw">const char</span>* n) {
+        name = <span class="kw">new char</span>[strlen(n)+<span class="num">1</span>];
+        strcpy(name, n);
+    }
+    <span class="cm">// NO custom copy ctor — compiler</span>
+    <span class="cm">// generates: name = other.name;</span>
+    <span class="cm">// Both objects share same memory!</span>
+    ~Bad() { <span class="kw">delete</span>[] name; } <span class="cm">// double-free!</span>
+};
+
+Bad a(<span class="str">"Ali"</span>);
+Bad b = a;         <span class="cm">// shallow: b.name == a.name</span>
+<span class="cm">// ~Bad() for b deletes memory</span>
+<span class="cm">// ~Bad() for a → CRASH (double free)</span></pre>
+      </div>
+    </div>
+    <div>
+      <div class="diff-label good">✓ Deep Copy (correct)</div>
+      <div class="code-wrap">
+        <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">deep.cpp</span></div>
+        <pre class="code"><span class="kw">class</span> <span class="cls">Good</span> {
+<span class="kw">public</span>:
+    <span class="kw">char</span>* name;
+    Good(<span class="kw">const char</span>* n) {
+        name = <span class="kw">new char</span>[strlen(n)+<span class="num">1</span>];
+        strcpy(name, n);
+    }
+    <span class="cm">// Deep copy constructor</span>
+    Good(<span class="kw">const</span> Good&amp; o) {
+        name = <span class="kw">new char</span>[strlen(o.name)+<span class="num">1</span>];
+        strcpy(name, o.name); <span class="cm">// NEW memory</span>
+    }
+    <span class="cm">// Deep copy assignment operator</span>
+    Good&amp; <span class="kw">operator</span>=(<span class="kw">const</span> Good&amp; o) {
+        <span class="kw">if</span> (<span class="kw">this</span> == &amp;o) <span class="kw">return</span> *<span class="kw">this</span>; <span class="cm">// self-assign</span>
+        <span class="kw">delete</span>[] name;
+        name = <span class="kw">new char</span>[strlen(o.name)+<span class="num">1</span>];
+        strcpy(name, o.name);
+        <span class="kw">return</span> *<span class="kw">this</span>;
+    }
+    ~Good() { <span class="kw">delete</span>[] name; }
+};</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="tip-hd">✓ Double Pointer Deep Copy</div>
+    For <code>T**</code> (e.g. <code>Medicine**</code>), deep copy needs TWO levels: allocate a new outer array, then allocate new inner objects in a loop. Simply copying the outer pointer is shallow at the outer level; copying the outer array but not the inner objects is "half-deep" — still unsafe.
+  </div>
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">deep_copy_double_ptr.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> <span class="cls">Prescription</span> {
+    Medicine** meds;  <span class="cm">// double pointer</span>
+    <span class="kw">int</span> count;
+<span class="kw">public</span>:
+    Prescription(<span class="kw">int</span> n) : count(n) {
+        meds = <span class="kw">new</span> Medicine*[count];
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; count; i++)
+            meds[i] = <span class="kw">new</span> Medicine(<span class="str">"Med"</span> + to_string(i));
+    }
+
+    <span class="hi">Prescription(<span class="kw">const</span> Prescription&amp; o) {</span>
+    <span class="hi">    count = o.count;</span>
+    <span class="hi">    meds  = <span class="kw">new</span> Medicine*[count];      <span class="cm">// new outer array</span></span>
+    <span class="hi">    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; count; i++)</span>
+    <span class="hi">        meds[i] = <span class="kw">new</span> Medicine(*o.meds[i]); <span class="cm">// new inner objects</span></span>
+    <span class="hi">}</span>
+
+    ~Prescription() {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; count; i++) <span class="kw">delete</span> meds[i];
+        <span class="kw">delete</span>[] meds;
+    }
+};</pre>
+  </div>
+</section>
+
+
+<!-- ════════════ COMPOSITION ════════════ -->
+<section class="section" id="s-composition">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Composition (has-a)</span>
+    <span class="section-tag">strong ownership</span>
+  </div>
+  <div class="concept-intro">
+    <strong>Composition</strong>: the inner object is a <em>direct member</em> (not a pointer, not a reference). Its lifetime is fully controlled by the outer class — created when the outer object is created, destroyed when the outer object is destroyed. The inner object <strong>cannot exist</strong> without the outer object. Initialise via the <strong>initialiser list</strong>.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">composition.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> <span class="cls">Clinic</span> {
+    string name;
+    string location;
+<span class="kw">public</span>:
+    Clinic(string n, string l) : name(n), location(l) {
+        cout &lt;&lt; <span class="str">"Clinic '"</span> &lt;&lt; name &lt;&lt; <span class="str">"' built\n"</span>;
+    }
+    ~Clinic() { cout &lt;&lt; <span class="str">"Clinic '"</span> &lt;&lt; name &lt;&lt; <span class="str">"' demolished\n"</span>; }
+    string getName() <span class="kw">const</span> { <span class="kw">return</span> name; }
+};
+
+<span class="kw">class</span> <span class="cls">Doctor</span> {
+    string doctorName;
+    <span class="hi">Clinic clinic;           <span class="cm">// direct member — composition</span></span>
+<span class="kw">public</span>:
+    <span class="hi">Doctor(string dn, string cn, string cl)</span>
+    <span class="hi">    : doctorName(dn), clinic(cn, cl) {} <span class="cm">// Clinic init in initialiser list</span></span>
+
+    ~Doctor() { cout &lt;&lt; <span class="str">"Doctor destroyed\n"</span>; }
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Doctor d(<span class="str">"Dr. Ali"</span>, <span class="str">"City Clinic"</span>, <span class="str">"Karachi"</span>);
+    <span class="cm">// Output order:</span>
+    <span class="cm">// Clinic 'City Clinic' built   (member init before body)</span>
+    <span class="cm">// --- Doctor goes out of scope ---</span>
+    <span class="cm">// Doctor destroyed             (destructor body first)</span>
+    <span class="cm">// Clinic 'City Clinic' demolished  (then member destructor)</span>
+}</pre>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Constructor Order</div>
+    Members are constructed in the ORDER they are declared in the class, not the order they appear in the initialiser list. Destructors run in REVERSE declaration order.
+  </div>
+</section>
+
+
+<!-- ════════════ AGGREGATION BY POINTER ════════════ -->
+<section class="section" id="s-aggr-ptr">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Aggregation by Pointer</span>
+    <span class="section-tag">weak ownership</span>
+  </div>
+  <div class="concept-intro">
+    <strong>Aggregation</strong>: the outer class <em>uses</em> the inner object but does not own it. The inner object can exist independently and its lifetime is managed externally. With a <strong>pointer</strong> member, the outer class stores an address. When the outer object is destroyed, it does <em>not</em> delete the inner object — that would be overstepping ownership.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">aggregation_pointer.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> <span class="cls">Department</span> {
+    string deptName;
+<span class="kw">public</span>:
+    Department(string n) : deptName(n) {}
+    string getName() <span class="kw">const</span> { <span class="kw">return</span> deptName; }
+    ~Department() { cout &lt;&lt; <span class="str">"Dept destroyed\n"</span>; }
+};
+
+<span class="kw">class</span> <span class="cls">Employee</span> {
+    string empName;
+    <span class="hi">Department* dept;    <span class="cm">// pointer — aggregation (does NOT own)</span></span>
+<span class="kw">public</span>:
+    <span class="hi">Employee(string n, Department* d) : empName(n), dept(d) {}</span>
+    <span class="cm">// Destructor does NOT delete dept — we don't own it</span>
+    ~Employee() { cout &lt;&lt; empName &lt;&lt; <span class="str">" Employee destroyed\n"</span>; }
+    <span class="kw">void</span> display() <span class="kw">const</span> {
+        cout &lt;&lt; empName &lt;&lt; <span class="str">" works in "</span> &lt;&lt; dept-&gt;getName() &lt;&lt; <span class="str">"\n"</span>;
+    }
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Department* cs = <span class="kw">new</span> Department(<span class="str">"Computer Science"</span>);
+    {
+        Employee e1(<span class="str">"Ali"</span>,  cs);
+        Employee e2(<span class="str">"Sara"</span>, cs);   <span class="cm">// SAME department, two employees</span>
+        e1.display();
+        e2.display();
+    }   <span class="cm">// e1 and e2 destroyed — dept NOT deleted</span>
+    cout &lt;&lt; <span class="str">"Department still alive: "</span> &lt;&lt; cs-&gt;getName() &lt;&lt; <span class="str">"\n"</span>;
+    <span class="kw">delete</span> cs;   <span class="cm">// owner (main) deletes it</span>
+}</pre>
+  </div>
+
+  <table class="ref-table" style="margin-top:1rem">
+    <tr><th>Aspect</th><th>Composition</th><th>Aggregation (ptr)</th></tr>
+    <tr><td>Member type</td><td>Direct object (T obj)</td><td>Pointer (T* ptr)</td></tr>
+    <tr><td>Lifetime</td><td>Tied to outer object</td><td>Independent</td></tr>
+    <tr><td>Destructor deletes?</td><td>Automatic (no delete)</td><td>NO — don't delete</td></tr>
+    <tr><td>Can be shared?</td><td>No</td><td>Yes (multiple owners)</td></tr>
+  </table>
+</section>
+
+
+<!-- ════════════ AGGREGATION BY REFERENCE ════════════ -->
+<section class="section" id="s-aggr-ref">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Aggregation by Reference</span>
+    <span class="section-tag">T&amp;</span>
+  </div>
+  <div class="concept-intro">
+    A <strong>reference member</strong> (<code>T&amp;</code>) must be initialised in the initialiser list — references cannot be default-initialised or reassigned. Like pointer aggregation, the outer class does not own the referenced object. References cannot be null and cannot be reseated (changed to refer to a different object after construction).
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">aggregation_reference.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> <span class="cls">Engine</span> {
+    <span class="kw">int</span> horsepower;
+<span class="kw">public</span>:
+    Engine(<span class="kw">int</span> hp) : horsepower(hp) {}
+    <span class="kw">int</span> getHP() <span class="kw">const</span> { <span class="kw">return</span> horsepower; }
+};
+
+<span class="kw">class</span> <span class="cls">Car</span> {
+    string model;
+    <span class="hi">Engine&amp; engine;   <span class="cm">// reference member — aggregation</span></span>
+<span class="kw">public</span>:
+    <span class="hi">Car(string m, Engine&amp; e) : model(m), engine(e) {}</span>
+    <span class="cm">// MUST init in initialiser list — references can't be default-init</span>
+    <span class="kw">void</span> display() <span class="kw">const</span> {
+        cout &lt;&lt; model &lt;&lt; <span class="str">" has "</span> &lt;&lt; engine.getHP() &lt;&lt; <span class="str">"hp\n"</span>;
+    }
+    <span class="cm">// No delete in destructor — we don't own the Engine</span>
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Engine v8(<span class="num">450</span>);          <span class="cm">// Engine exists independently</span>
+    Car c1(<span class="str">"Mustang"</span>, v8);   <span class="cm">// Car references v8</span>
+    Car c2(<span class="str">"Camaro"</span>,  v8);   <span class="cm">// Both cars share the same engine ref</span>
+    c1.display();
+    c2.display();
+    <span class="cm">// v8 outlives c1 and c2 — correct</span>
+}</pre>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Dangling Reference</div>
+    Never store a reference to a local variable that will go out of scope before the object holding the reference. The reference becomes dangling — accessing it is undefined behaviour.
+  </div>
+</section>
+
+
+<!-- ════════════ FRIEND FUNCTIONS ════════════ -->
+<section class="section" id="s-friend-fn">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Friend Functions</span>
+    <span class="section-tag">friend</span>
+  </div>
+  <div class="concept-intro">
+    A <strong>friend function</strong> is declared inside a class with the <code>friend</code> keyword but is <em>not</em> a member of that class. It has access to all private and protected members of the class that befriended it. Commonly used for: operator overloading involving non-member functions, utility comparisons, and printing functions.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">friend_function.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> <span class="cls">BankAccount</span> {
+    string owner;
+    <span class="kw">double</span> balance;   <span class="cm">// private</span>
+<span class="kw">public</span>:
+    BankAccount(string o, <span class="kw">double</span> b) : owner(o), balance(b) {}
+
+    <span class="cm">// 1. Friend utility function — access private balance directly</span>
+    <span class="hi">friend <span class="kw">bool</span> <span class="fn">isRicher</span>(BankAccount&amp; a, BankAccount&amp; b);</span>
+
+    <span class="cm">// 2. Friend operator<< for printing (very common pattern)</span>
+    <span class="hi">friend ostream&amp; <span class="kw">operator</span>&lt;&lt;(ostream&amp; os, <span class="kw">const</span> BankAccount&amp; acc);</span>
+};
+
+<span class="cm">// Defined OUTSIDE the class — but has private access</span>
+<span class="kw">bool</span> <span class="fn">isRicher</span>(BankAccount&amp; a, BankAccount&amp; b) {
+    <span class="kw">return</span> a.balance &gt; b.balance;   <span class="cm">// direct private access</span>
+}
+
+ostream&amp; <span class="kw">operator</span>&lt;&lt;(ostream&amp; os, <span class="kw">const</span> BankAccount&amp; acc) {
+    os &lt;&lt; acc.owner &lt;&lt; <span class="str">": Rs."</span> &lt;&lt; acc.balance;  <span class="cm">// direct private access</span>
+    <span class="kw">return</span> os;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    BankAccount a1(<span class="str">"Ali"</span>,  <span class="num">50000</span>);
+    BankAccount a2(<span class="str">"Sara"</span>, <span class="num">80000</span>);
+    cout &lt;&lt; a1 &lt;&lt; <span class="str">"\n"</span>;                 <span class="cm">// uses operator<<</span>
+    cout &lt;&lt; a2 &lt;&lt; <span class="str">"\n"</span>;
+    cout &lt;&lt; (isRicher(a2, a1) ? <span class="str">"Sara"</span> : <span class="str">"Ali"</span>) &lt;&lt; <span class="str">" is richer\n"</span>;
+}</pre>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Friend ≠ Member</div>
+    A friend function is NOT a member of the class. It has no <code>this</code> pointer. It takes the object as an explicit parameter. Friendship is not inherited — a derived class does NOT get the friend's access.
+  </div>
+</section>
+
+
+<!-- ════════════ FRIEND CLASS ════════════ -->
+<section class="section" id="s-friend-cls">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Friend Classes</span>
+    <span class="section-tag">friend class</span>
+  </div>
+  <div class="concept-intro">
+    When you declare <code>friend class Auditor</code> inside <code>Patient</code>, every member function of <code>Auditor</code> can access all private/protected members of <code>Patient</code>. Useful for tightly-coupled helper/manager classes that need deep access without making everything public.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">friend_class.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="kw">class</span> Auditor;   <span class="cm">// forward declaration needed (used before definition)</span>
+
+<span class="kw">class</span> <span class="cls">Patient</span> {
+    string name;
+    <span class="kw">double</span> bill;
+    string diagnosis;
+<span class="kw">public</span>:
+    Patient(string n, <span class="kw">double</span> b, string d)
+        : name(n), bill(b), diagnosis(d) {}
+
+    <span class="hi">friend <span class="kw">class</span> Auditor;   <span class="cm">// Auditor gets full access to Patient's privates</span></span>
+};
+
+<span class="kw">class</span> <span class="cls">Auditor</span> {
+<span class="kw">public</span>:
+    <span class="kw">void</span> <span class="fn">generateReport</span>(<span class="kw">const</span> Patient&amp; p) {
+        <span class="cm">// Direct access to private members — allowed because friend class</span>
+        cout &lt;&lt; <span class="str">"--- AUDIT REPORT ---\n"</span>;
+        cout &lt;&lt; <span class="str">"Patient:   "</span> &lt;&lt; p.name      &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// private OK</span>
+        cout &lt;&lt; <span class="str">"Diagnosis: "</span> &lt;&lt; p.diagnosis &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// private OK</span>
+        cout &lt;&lt; <span class="str">"Bill:      Rs."</span> &lt;&lt; p.bill  &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// private OK</span>
+        cout &lt;&lt; <span class="str">"Status:    "</span> &lt;&lt; (p.bill == <span class="num">0</span> ? <span class="str">"PAID"</span> : <span class="str">"UNPAID"</span>) &lt;&lt; <span class="str">"\n"</span>;
+    }
+
+    <span class="kw">void</span> <span class="fn">auditAll</span>(Patient** patients, <span class="kw">int</span> n) {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+            generateReport(*patients[i]);
+    }
+};
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Patient p1(<span class="str">"Ali"</span>,  <span class="num">5000</span>, <span class="str">"Fever"</span>);
+    Patient p2(<span class="str">"Sara"</span>, <span class="num">0</span>,    <span class="str">"Fracture"</span>);
+    Auditor a;
+    a.generateReport(p1);
+    a.generateReport(p2);
+}</pre>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Key Rules</div>
+    Friendship is NOT symmetric: <code>Patient</code> befriending <code>Auditor</code> does NOT mean <code>Auditor</code> befriends <code>Patient</code>.<br>
+    Friendship is NOT inherited: <code>Auditor</code>'s subclasses do NOT get Patient's private access.<br>
+    Always forward-declare the friend class if it hasn't been defined yet.
+  </div>
+</section>
+
+
+<!-- ════════════ TEMPLATES ════════════ -->
+<section class="section" id="s-templates">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <span class="section-title">Templates &amp; Generics</span>
+    <span class="section-tag">template&lt;typename T&gt;</span>
+  </div>
+  <div class="concept-intro">
+    Templates let you write one piece of code that works for any type. The compiler generates a <strong>type-specific instantiation</strong> when it sees a call. <strong>Function templates</strong> work on any compatible type. <strong>Class templates</strong> create generic containers. <strong>Template specialisation</strong> overrides the generic version for a specific type.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="switchTab('tpl', 'fn', this)">Function Template</button>
+    <button class="tab-btn" onclick="switchTab('tpl', 'cls', this)">Class Template</button>
+    <button class="tab-btn" onclick="switchTab('tpl', 'spec', this)">Specialisation</button>
+    <button class="tab-btn" onclick="switchTab('tpl', 'static', this)">Static in Template</button>
+  </div>
+
+  <div id="tpl-fn" class="tab-pane on">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">function_template.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// One function for ALL types</span>
+<span class="hi">template&lt;<span class="kw">typename</span> T&gt;</span>
+T <span class="fn">maxVal</span>(T a, T b) {
+    <span class="kw">return</span> (a &gt; b) ? a : b;
+}
+
+<span class="cm">// Two-type version</span>
+template&lt;<span class="kw">typename</span> T, <span class="kw">typename</span> U&gt;
+<span class="kw">void</span> <span class="fn">printPair</span>(T a, U b) {
+    cout &lt;&lt; <span class="str">"("</span> &lt;&lt; a &lt;&lt; <span class="str">", "</span> &lt;&lt; b &lt;&lt; <span class="str">")\n"</span>;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    cout &lt;&lt; maxVal(<span class="num">3</span>, <span class="num">7</span>)          &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// int instantiation</span>
+    cout &lt;&lt; maxVal(<span class="num">3.14</span>, <span class="num">2.71</span>)   &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// double instantiation</span>
+    cout &lt;&lt; maxVal(<span class="str">'a'</span>, <span class="str">'z'</span>)     &lt;&lt; <span class="str">"\n"</span>;  <span class="cm">// char instantiation</span>
+    printPair(<span class="num">42</span>, <span class="str">"hello"</span>);              <span class="cm">// T=int, U=const char*</span>
+}</pre>
+    </div>
+  </div>
+
+  <div id="tpl-cls" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">class_template.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="hi">template&lt;<span class="kw">typename</span> T&gt;</span>
+<span class="kw">class</span> <span class="cls">MedVault</span> {
+    T* items[<span class="num">50</span>];
+    <span class="kw">int</span> count;
+<span class="kw">public</span>:
+    MedVault() : count(<span class="num">0</span>) {}
+
+    <span class="kw">void</span> <span class="fn">add</span>(T* item) {
+        <span class="kw">if</span> (count &lt; <span class="num">50</span>) items[count++] = item;
+    }
+
+    T* <span class="kw">operator</span>[](<span class="kw">int</span> i) <span class="kw">const</span> { <span class="kw">return</span> items[i]; }
+
+    <span class="kw">int</span> <span class="fn">size</span>() <span class="kw">const</span> { <span class="kw">return</span> count; }
+
+    ~MedVault() {
+        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; count; i++) <span class="kw">delete</span> items[i];
+    }
+};
+
+<span class="cm">// Template with non-type parameter (compile-time constant size)</span>
+template&lt;<span class="kw">typename</span> T, <span class="kw">int</span> MaxSize&gt;
+<span class="kw">class</span> <span class="cls">FixedArray</span> { T data[MaxSize]; ... };
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    MedVault&lt;string&gt; meds;   <span class="cm">// T = string</span>
+    meds.add(<span class="kw">new</span> string(<span class="str">"Panadol"</span>));
+    meds.add(<span class="kw">new</span> string(<span class="str">"Brufen"</span>));
+    cout &lt;&lt; *meds[<span class="num">0</span>] &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// Panadol</span>
+
+    MedVault&lt;Patient&gt; patients;  <span class="cm">// same template, different type</span>
+    patients.add(<span class="kw">new</span> Patient(<span class="str">"Ali"</span>, <span class="num">5000</span>));
+    patients[<span class="num">0</span>]-&gt;display();
+}</pre>
+    </div>
+  </div>
+
+  <div id="tpl-spec" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">template_specialisation.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// Generic template</span>
+template&lt;<span class="kw">typename</span> T&gt;
+<span class="kw">class</span> <span class="cls">Pair</span> {
+    T a, b;
+<span class="kw">public</span>:
+    Pair(T x, T y) : a(x), b(y) {}
+    T <span class="fn">sum</span>() { <span class="kw">return</span> a + b; }
+};
+
+<span class="cm">// Full specialisation for char — completely custom behaviour</span>
+<span class="hi">template&lt;&gt;                     <span class="cm">// empty template params</span></span>
+<span class="hi"><span class="kw">class</span> Pair&lt;<span class="kw">char</span>&gt; {            <span class="cm">// specialised for char</span></span>
+<span class="hi">    <span class="kw">char</span> a, b;</span>
+<span class="hi"><span class="kw">public</span>:</span>
+<span class="hi">    Pair(<span class="kw">char</span> x, <span class="kw">char</span> y) : a(x), b(y) {}</span>
+<span class="hi">    string <span class="fn">sum</span>() {            <span class="cm">// returns string instead of char!</span></span>
+<span class="hi">        string s = <span class="str">""</span>; s += a; s += b; <span class="kw">return</span> s;</span>
+<span class="hi">    }</span>
+<span class="hi">};</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    Pair&lt;<span class="kw">int</span>&gt;  pi(<span class="num">3</span>, <span class="num">4</span>);
+    Pair&lt;<span class="kw">char</span>&gt; pc(<span class="str">'A'</span>, <span class="str">'B'</span>);
+    cout &lt;&lt; pi.sum() &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// 7       (int version)</span>
+    cout &lt;&lt; pc.sum() &lt;&lt; <span class="str">"\n"</span>;   <span class="cm">// AB      (char specialisation)</span>
+}</pre>
+    </div>
+  </div>
+
+  <div id="tpl-static" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">template_static_trap.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// CRITICAL EXAM TRAP: static in template functions</span>
+template&lt;<span class="kw">typename</span> T&gt;
+<span class="kw">void</span> <span class="fn">counter</span>(T val) {
+    <span class="hi"><span class="kw">static int</span> count = <span class="num">0</span>;   <span class="cm">// separate static per instantiation!</span></span>
+    cout &lt;&lt; <span class="str">"val="</span> &lt;&lt; val &lt;&lt; <span class="str">" count="</span> &lt;&lt; count &lt;&lt; <span class="str">"\n"</span>;
+    count++;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    counter(<span class="num">1</span>);     <span class="cm">// int: count=0 → prints 0, increments to 1</span>
+    counter(<span class="num">2</span>);     <span class="cm">// int: count=1 → prints 1, increments to 2</span>
+    counter(<span class="num">3.14</span>);  <span class="cm">// double: SEPARATE static, count=0 → prints 0</span>
+    counter(<span class="num">2.71</span>);  <span class="cm">// double: count=1 → prints 1</span>
+    counter(<span class="num">99</span>);    <span class="cm">// int: count=2 → prints 2</span>
+}
+<span class="cm">// Output:</span>
+<span class="cm">// val=1   count=0</span>
+<span class="cm">// val=2   count=1</span>
+<span class="cm">// val=3.14 count=0    ← new static for double</span>
+<span class="cm">// val=2.71 count=1</span>
+<span class="cm">// val=99  count=2     ← resumes int's static</span></pre>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════ FILE HANDLING (TEXT) ════════════ -->
+<section class="section" id="s-file-text">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <span class="section-title">File Handling — Text Mode</span>
+    <span class="section-tag">&lt;fstream&gt;</span>
+  </div>
+  <div class="concept-intro">
+    Use <code>&lt;fstream&gt;</code>. <code>ofstream</code> for writing, <code>ifstream</code> for reading, <code>fstream</code> for both. Always check if the file opened successfully with <code>if (!file)</code>. Always close when done. Key modes: <code>ios::out</code> (write/create), <code>ios::app</code> (append), <code>ios::in</code> (read), combine with <code>|</code>.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="switchTab('ft', 'write', this)">Write</button>
+    <button class="tab-btn" onclick="switchTab('ft', 'read', this)">Read</button>
+    <button class="tab-btn" onclick="switchTab('ft', 'append', this)">Append / Log</button>
+    <button class="tab-btn" onclick="switchTab('ft', 'modes', this)">Open Modes</button>
+  </div>
+
+  <div id="ft-write" class="tab-pane on">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">file_write.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="pp">#include &lt;fstream&gt;</span>
+<span class="pp">#include &lt;stdexcept&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="kw">void</span> <span class="fn">savePatient</span>(<span class="kw">const</span> string&amp; name, <span class="kw">double</span> bill) {
+    <span class="hi">ofstream f(<span class="str">"records.txt"</span>);           <span class="cm">// creates/truncates</span></span>
+    <span class="hi"><span class="kw">if</span> (!f) <span class="kw">throw</span> runtime_error(<span class="str">"Cannot open file"</span>);</span>
+    f &lt;&lt; name &lt;&lt; <span class="str">" "</span> &lt;&lt; bill &lt;&lt; <span class="str">"\n"</span>;
+    f.close();
+}
+
+<span class="kw">void</span> <span class="fn">saveMany</span>(string names[], <span class="kw">double</span> bills[], <span class="kw">int</span> n) {
+    ofstream f(<span class="str">"records.txt"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">throw</span> runtime_error(<span class="str">"Cannot open file"</span>);
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++)
+        f &lt;&lt; names[i] &lt;&lt; <span class="str">" "</span> &lt;&lt; bills[i] &lt;&lt; <span class="str">"\n"</span>;
+    f.close();
+    cout &lt;&lt; <span class="str">"Saved "</span> &lt;&lt; n &lt;&lt; <span class="str">" records.\n"</span>;
+}</pre>
+    </div>
+  </div>
+
+  <div id="ft-read" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">file_read.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="kw">void</span> <span class="fn">readAll</span>() {
+    <span class="hi">ifstream f(<span class="str">"records.txt"</span>);</span>
+    <span class="hi"><span class="kw">if</span> (!f) <span class="kw">throw</span> runtime_error(<span class="str">"File not found"</span>);</span>
+
+    string name; <span class="kw">double</span> bill;
+    <span class="hi"><span class="kw">while</span> (f &gt;&gt; name &gt;&gt; bill) {      <span class="cm">// reads until EOF</span></span>
+        cout &lt;&lt; name &lt;&lt; <span class="str">": Rs."</span> &lt;&lt; bill &lt;&lt; <span class="str">"\n"</span>;
+    }
+    f.close();
+}
+
+<span class="kw">void</span> <span class="fn">readLines</span>() {
+    ifstream f(<span class="str">"notes.txt"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">return</span>;
+    string line;
+    <span class="hi"><span class="kw">while</span> (getline(f, line)) {        <span class="cm">// reads full lines</span></span>
+        cout &lt;&lt; line &lt;&lt; <span class="str">"\n"</span>;
+    }
+    f.close();
+}
+
+<span class="kw">void</span> <span class="fn">filterHighBill</span>(<span class="kw">double</span> threshold) {
+    ifstream f(<span class="str">"records.txt"</span>);
+    <span class="kw">if</span> (!f) <span class="kw">throw</span> runtime_error(<span class="str">"File not found"</span>);
+    string name; <span class="kw">double</span> bill;
+    <span class="kw">while</span> (f &gt;&gt; name &gt;&gt; bill)
+        <span class="kw">if</span> (bill &gt; threshold)
+            cout &lt;&lt; name &lt;&lt; <span class="str">": "</span> &lt;&lt; bill &lt;&lt; <span class="str">"\n"</span>;
+    f.close();
+}</pre>
+    </div>
+  </div>
+
+  <div id="ft-append" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">file_append_log.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// ios::app — opens without truncating, writes to end</span>
+<span class="kw">void</span> <span class="fn">logError</span>(<span class="kw">const</span> string&amp; user, <span class="kw">const</span> string&amp; msg) {
+    <span class="hi">ofstream log(<span class="str">"error_log.txt"</span>, ios::app);   <span class="cm">// APPEND mode</span></span>
+    <span class="kw">if</span> (!log) <span class="kw">return</span>;
+    log &lt;&lt; <span class="str">"["</span> &lt;&lt; user &lt;&lt; <span class="str">"]: "</span> &lt;&lt; msg &lt;&lt; <span class="str">"\n"</span>;
+    log.close();
+}
+
+<span class="cm">// Analysis — read back and find user with most exceptions</span>
+<span class="kw">void</span> <span class="fn">analyseLog</span>() {
+    ifstream log(<span class="str">"error_log.txt"</span>);
+    <span class="kw">if</span> (!log) { cout &lt;&lt; <span class="str">"No log file\n"</span>; <span class="kw">return</span>; }
+    map&lt;string, <span class="kw">int</span>&gt; freq;
+    string line;
+    <span class="kw">while</span> (getline(log, line)) {
+        <span class="kw">if</span> (line.empty()) <span class="kw">continue</span>;
+        string user = line.substr(<span class="num">1</span>, line.find(<span class="str">"]"</span>) - <span class="num">1</span>);
+        freq[user]++;
+    }
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; p : freq)
+        cout &lt;&lt; p.first &lt;&lt; <span class="str">": "</span> &lt;&lt; p.second &lt;&lt; <span class="str">" errors\n"</span>;
+    log.close();
+}</pre>
+    </div>
+  </div>
+
+  <div id="ft-modes" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">file_modes_reference.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// ── Open Mode Quick Reference ──</span>
+ios::in       <span class="cm">// read only</span>
+ios::out      <span class="cm">// write (creates file, truncates if exists)</span>
+ios::app      <span class="cm">// append to end — NEVER truncates</span>
+ios::ate      <span class="cm">// open and seek to end (but can seek back)</span>
+ios::trunc    <span class="cm">// truncate file on open (default with ios::out)</span>
+ios::binary   <span class="cm">// binary mode (no newline translation)</span>
+
+<span class="cm">// Combine with |</span>
+fstream f(<span class="str">"data.txt"</span>, ios::in | ios::out);           <span class="cm">// read + write</span>
+fstream f(<span class="str">"data.txt"</span>, ios::in | ios::out | ios::app); <span class="cm">// r/w + append</span>
+fstream f(<span class="str">"data.dat"</span>, ios::binary | ios::in);         <span class="cm">// binary read</span>
+
+<span class="cm">// seekg (read) / seekp (write) for random access</span>
+f.seekg(<span class="num">0</span>, ios::beg);    <span class="cm">// jump to beginning</span>
+f.seekg(<span class="num">0</span>, ios::end);    <span class="cm">// jump to end</span>
+f.seekg(<span class="num">2</span> * <span class="kw">sizeof</span>(Record), ios::beg); <span class="cm">// jump to 3rd record</span>
+<span class="kw">long</span> pos = f.tellg();    <span class="cm">// get current read position</span></pre>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════ FILE HANDLING (BINARY) ════════════ -->
+<section class="section" id="s-file-bin">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <span class="section-title">File Handling — Binary Mode</span>
+    <span class="section-tag">ios::binary · read/write</span>
+  </div>
+  <div class="concept-intro">
+    Binary mode writes raw bytes — no newline translation, no text formatting. Use <code>write()</code> and <code>read()</code> with <code>reinterpret_cast&lt;char*&gt;</code>. Works on plain old data (POD) structs. <strong>Warning:</strong> do NOT binary-write objects with pointers — the pointer address will be saved, not the data it points to.
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">binary_file.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre class="code"><span class="pp">#include &lt;fstream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// Use fixed-size types — no pointers, no std::string</span>
+<span class="kw">struct</span> <span class="cls">StudentRecord</span> {
+    <span class="kw">char</span> name[<span class="num">50</span>];   <span class="cm">// fixed-size char array, NOT string</span>
+    <span class="kw">int</span>  rollNo;
+    <span class="kw">float</span> gpa;
+};
+
+<span class="kw">void</span> <span class="fn">writeBinary</span>() {
+    StudentRecord s;
+    strncpy(s.name, <span class="str">"Ali Ahmed"</span>, <span class="num">50</span>);
+    s.rollNo = <span class="num">1234</span>;
+    s.gpa    = <span class="num">3.8f</span>;
+
+    <span class="hi">ofstream f(<span class="str">"students.dat"</span>, ios::binary);</span>
+    <span class="kw">if</span> (!f) { cerr &lt;&lt; <span class="str">"Cannot open file\n"</span>; <span class="kw">return</span>; }
+
+    <span class="hi">f.write(reinterpret_cast&lt;<span class="kw">char</span>*&gt;(&amp;s), <span class="kw">sizeof</span>(s));</span>
+    f.close();
+    cout &lt;&lt; <span class="str">"Written: "</span> &lt;&lt; s.name &lt;&lt; <span class="str">"\n"</span>;
+}
+
+<span class="kw">void</span> <span class="fn">readBinary</span>() {
+    StudentRecord s;
+    <span class="hi">ifstream f(<span class="str">"students.dat"</span>, ios::binary);</span>
+    <span class="kw">if</span> (!f) { cerr &lt;&lt; <span class="str">"File not found\n"</span>; <span class="kw">return</span>; }
+
+    <span class="hi">f.read(reinterpret_cast&lt;<span class="kw">char</span>*&gt;(&amp;s), <span class="kw">sizeof</span>(s));</span>
+    cout &lt;&lt; s.name &lt;&lt; <span class="str">" | Roll: "</span> &lt;&lt; s.rollNo
+         &lt;&lt; <span class="str">" | GPA: "</span> &lt;&lt; s.gpa &lt;&lt; <span class="str">"\n"</span>;
+    f.close();
+}
+
+<span class="cm">// Reading multiple records with seekg</span>
+<span class="kw">void</span> <span class="fn">readRecord</span>(<span class="kw">int</span> index) {
+    ifstream f(<span class="str">"students.dat"</span>, ios::binary);
+    <span class="hi">f.seekg(index * <span class="kw">sizeof</span>(StudentRecord), ios::beg);</span>
+    StudentRecord s;
+    f.read(reinterpret_cast&lt;<span class="kw">char</span>*&gt;(&amp;s), <span class="kw">sizeof</span>(s));
+    cout &lt;&lt; <span class="str">"Record "</span> &lt;&lt; index &lt;&lt; <span class="str">": "</span> &lt;&lt; s.name &lt;&lt; <span class="str">"\n"</span>;
+    f.close();
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    writeBinary();
+    readBinary();
+    readRecord(<span class="num">0</span>);
+}</pre>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ Never Binary-Write Objects with Pointers or std::string</div>
+    <code>std::string</code> contains an internal pointer. Binary-writing it saves the pointer ADDRESS, not the string data. When you read it back (different run, different memory layout), the pointer is garbage. Use <code>char[]</code> fixed arrays for binary file structs.
+  </div>
+</section>
+
+
+<!-- ════════════ EXCEPTION HANDLING ════════════ -->
+<section class="section" id="s-exc">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <span class="section-title">Exception Handling</span>
+    <span class="section-tag">try · catch · throw</span>
+  </div>
+  <div class="concept-intro">
+    <code>throw</code> raises an exception. <code>try</code> wraps code that might throw. <code>catch</code> handles a specific type. Execution jumps from <code>throw</code> directly to the first matching <code>catch</code> — all code between is skipped. Catch by <strong>reference</strong> (<code>&amp;</code>) to avoid slicing and allow polymorphism.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="switchTab('exc', 'basic', this)">Basic Flow</button>
+    <button class="tab-btn" onclick="switchTab('exc', 'custom', this)">Custom Exception</button>
+    <button class="tab-btn" onclick="switchTab('exc', 'hier', this)">Exception Hierarchy</button>
+    <button class="tab-btn" onclick="switchTab('exc', 'rethrow', this)">Re-throw &amp; Stack Unwind</button>
+  </div>
+
+  <div id="exc-basic" class="tab-pane on">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">exception_basic.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="kw">void</span> <span class="fn">divide</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+    <span class="kw">if</span> (b == <span class="num">0</span>) <span class="kw">throw</span> runtime_error(<span class="str">"Division by zero"</span>);
+    cout &lt;&lt; a / b &lt;&lt; <span class="str">"\n"</span>;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">try</span> {
+        divide(<span class="num">10</span>, <span class="num">2</span>);   <span class="cm">// succeeds → prints 5</span>
+        divide(<span class="num">10</span>, <span class="num">0</span>);   <span class="cm">// throws — jumps to catch immediately</span>
+        divide(<span class="num">20</span>, <span class="num">4</span>);   <span class="cm">// NEVER reached</span>
+    }
+    <span class="hi"><span class="kw">catch</span> (runtime_error&amp; e) {       <span class="cm">// catch by reference</span></span>
+        cout &lt;&lt; <span class="str">"Error: "</span> &lt;&lt; e.what() &lt;&lt; <span class="str">"\n"</span>;
+    }
+    <span class="kw">catch</span> (<span class="kw">int</span> code) {                <span class="cm">// catch by value (primitives)</span>
+        cout &lt;&lt; <span class="str">"Code: "</span> &lt;&lt; code &lt;&lt; <span class="str">"\n"</span>;
+    }
+    <span class="kw">catch</span> (...) {                      <span class="cm">// catch-all — MUST be last</span>
+        cout &lt;&lt; <span class="str">"Unknown exception\n"</span>;
+    }
+    <span class="cm">// Program continues here after catch</span>
+    cout &lt;&lt; <span class="str">"After try-catch\n"</span>;
+}</pre>
+    </div>
+  </div>
+
+  <div id="exc-custom" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">custom_exception.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// Inherit from std::exception and override what()</span>
+<span class="hi"><span class="kw">class</span> <span class="cls">HospitalException</span> : <span class="kw">public</span> exception {</span>
+<span class="hi">    string msg;</span>
+<span class="hi"><span class="kw">public</span>:</span>
+<span class="hi">    HospitalException(string m) : msg(m) {}</span>
+<span class="hi">    <span class="kw">const char</span>* <span class="fn">what</span>() <span class="kw">const noexcept override</span> {</span>
+<span class="hi">        <span class="kw">return</span> msg.c_str();</span>
+<span class="hi">    }</span>
+<span class="hi">};</span>
+
+<span class="kw">void</span> <span class="fn">admitPatient</span>(<span class="kw">int</span> beds) {
+    <span class="kw">if</span> (beds &lt;= <span class="num">0</span>)   <span class="kw">throw</span> HospitalException(<span class="str">"No beds available"</span>);
+    <span class="kw">if</span> (beds &gt; <span class="num">500</span>)  <span class="kw">throw</span> runtime_error(<span class="str">"Bed count overflow"</span>);
+    cout &lt;&lt; <span class="str">"Admitted. Beds left: "</span> &lt;&lt; beds - <span class="num">1</span> &lt;&lt; <span class="str">"\n"</span>;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">try</span> {
+        admitPatient(<span class="num">5</span>);
+        admitPatient(<span class="num">0</span>);    <span class="cm">// throws HospitalException</span>
+    }
+    <span class="kw">catch</span> (HospitalException&amp; e) {
+        cout &lt;&lt; <span class="str">"Hospital: "</span> &lt;&lt; e.what() &lt;&lt; <span class="str">"\n"</span>;
+    }
+    <span class="kw">catch</span> (runtime_error&amp; e) {
+        cout &lt;&lt; <span class="str">"Runtime: "</span> &lt;&lt; e.what() &lt;&lt; <span class="str">"\n"</span>;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div id="exc-hier" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">exception_hierarchy.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// Exception hierarchy — catch derived before base</span>
+<span class="kw">class</span> <span class="cls">AppException</span> : <span class="kw">public</span> exception {
+<span class="kw">public</span>:
+    AppException(string m) : msg(m) {}
+    <span class="kw">const char</span>* what() <span class="kw">const noexcept override</span> { <span class="kw">return</span> msg.c_str(); }
+<span class="kw">private</span>: string msg;
+};
+
+<span class="hi"><span class="kw">class</span> <span class="cls">DatabaseException</span> : <span class="kw">public</span> AppException {</span>
+<span class="hi"><span class="kw">public</span>: DatabaseException(string m) : AppException(m) {}</span>
+<span class="hi">};</span>
+
+<span class="hi"><span class="kw">class</span> <span class="cls">NetworkException</span>  : <span class="kw">public</span> AppException {</span>
+<span class="hi"><span class="kw">public</span>: NetworkException(string m)  : AppException(m) {}</span>
+<span class="hi">};</span>
+
+<span class="kw">void</span> <span class="fn">connect</span>(<span class="kw">int</span> mode) {
+    <span class="kw">if</span> (mode == <span class="num">0</span>) <span class="kw">throw</span> DatabaseException(<span class="str">"DB timeout"</span>);
+    <span class="kw">if</span> (mode == <span class="num">1</span>) <span class="kw">throw</span> NetworkException(<span class="str">"No connection"</span>);
+    <span class="kw">if</span> (mode == <span class="num">2</span>) <span class="kw">throw</span> AppException(<span class="str">"Generic app error"</span>);
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">try</span> { connect(<span class="num">0</span>); }
+    <span class="cm">// MUST catch derived types BEFORE base types</span>
+    <span class="kw">catch</span> (DatabaseException&amp; e) { cout &lt;&lt; <span class="str">"DB: "</span> &lt;&lt; e.what(); }
+    <span class="kw">catch</span> (NetworkException&amp; e)  { cout &lt;&lt; <span class="str">"Net: "</span> &lt;&lt; e.what(); }
+    <span class="kw">catch</span> (AppException&amp; e)      { cout &lt;&lt; <span class="str">"App: "</span> &lt;&lt; e.what(); }
+    <span class="kw">catch</span> (exception&amp; e)         { cout &lt;&lt; <span class="str">"Std: "</span> &lt;&lt; e.what(); }
+    <span class="kw">catch</span> (...)                   { cout &lt;&lt; <span class="str">"Unknown\n"</span>; }
+}</pre>
+    </div>
+  </div>
+
+  <div id="exc-rethrow" class="tab-pane">
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">rethrow_stack_unwind.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="cm">// Stack unwinding: when exception thrown, destructors of all</span>
+<span class="cm">// local objects in scope run automatically (RAII guarantee)</span>
+<span class="kw">class</span> <span class="cls">Guard</span> {
+<span class="kw">public</span>:
+    Guard()  { cout &lt;&lt; <span class="str">"Guard ON\n"</span>; }
+    ~Guard() { cout &lt;&lt; <span class="str">"Guard OFF (stack unwind)\n"</span>; }
+};
+
+<span class="kw">void</span> <span class="fn">inner</span>() {
+    Guard g;          <span class="cm">// constructor runs</span>
+    <span class="kw">throw</span> <span class="num">42</span>;         <span class="cm">// exception! → ~Guard() auto-called</span>
+}
+
+<span class="cm">// Re-throw: pass the exception up the call stack</span>
+<span class="kw">void</span> <span class="fn">middle</span>() {
+    <span class="kw">try</span> {
+        inner();
+    } <span class="kw">catch</span> (<span class="kw">int</span>&amp; e) {
+        cout &lt;&lt; <span class="str">"Middle caught "</span> &lt;&lt; e &lt;&lt; <span class="str">", rethrowing\n"</span>;
+        <span class="hi"><span class="kw">throw</span>;   <span class="cm">// re-throw current exception (no argument)</span></span>
+    }
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">try</span> { middle(); }
+    <span class="kw">catch</span> (<span class="kw">int</span>&amp; e) { cout &lt;&lt; <span class="str">"Main caught "</span> &lt;&lt; e &lt;&lt; <span class="str">"\n"</span>; }
+}
+<span class="cm">// Output:</span>
+<span class="cm">// Guard ON</span>
+<span class="cm">// Guard OFF (stack unwind)   ← destructor called during throw</span>
+<span class="cm">// Middle caught 42, rethrowing</span>
+<span class="cm">// Main caught 42</span></pre>
+    </div>
+  </div>
+  <div class="trap">
+    <div class="trap-hd">⚠ catch(...) Must Be Last</div>
+    <code>catch(...)</code> catches everything — if placed before specific catches, those specific catches become unreachable (the compiler may error or warn). Always order: most specific derived first → base class → catch-all last.
+  </div>
+</section>
+
+
+<!-- ════════════ GOTCHAS ════════════ -->
+<section class="section" id="s-gotchas">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <span class="section-title">Difficult &amp; Confusing Things</span>
+    <span class="section-tag">exam traps</span>
+  </div>
+
+  <div class="concept-intro">The most commonly misunderstood situations in C++ OOP — the things that look reasonable but produce surprising output.</div>
+
+  <!-- Delegating Ctor Trap -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G1</span>
+      <span class="section-title" style="font-size:1rem">Delegating Constructor — The Temporary Trap</span>
+    </div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">delegating_ctor_trap.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code">Point() { Point(<span class="num">1</span>, <span class="num">1</span>); }   <span class="cm">// THIS IS WRONG</span>
+<span class="cm">// This does NOT call Point(1,1) on *this</span>
+<span class="cm">// It creates a TEMPORARY Point(1,1) object, then discards it</span>
+<span class="cm">// *this remains uninitialised</span>
+
+<span class="cm">// Correct C++11 delegation:</span>
+<span class="hi">Point() : Point(<span class="num">1</span>, <span class="num">1</span>) {}    <span class="cm">// ← in the initialiser list</span></span>
+
+<span class="cm">// Exam consequence: Point() { Point(1,1); }</span>
+<span class="cm">// means the Point(int,int) ctor DOES run (and prints output)</span>
+<span class="cm">// but only for the temporary — the actual object is unset</span></pre>
+    </div>
+  </div>
+
+  <!-- Object Slicing -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G2</span>
+      <span class="section-title" style="font-size:1rem">Object Slicing — Value Copy Kills Polymorphism</span>
+    </div>
+    <div class="diff-grid">
+      <div>
+        <div class="diff-label bad">✗ Sliced — polymorphism lost</div>
+        <div class="code-wrap">
+          <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">sliced.cpp</span></div>
+          <pre class="code">Derived d;
+Base b = d;      <span class="cm">// SLICED</span>
+b.show();        <span class="cm">// prints "Base" NOT "Derived"</span>
+<span class="cm">// Derived part is gone, vtable is Base's</span></pre>
+        </div>
+      </div>
+      <div>
+        <div class="diff-label good">✓ No slicing — use pointer/reference</div>
+        <div class="code-wrap">
+          <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">no_slice.cpp</span></div>
+          <pre class="code">Derived d;
+Base* bp = &amp;d;   <span class="cm">// pointer — no slice</span>
+Base&amp; br =  d;   <span class="cm">// reference — no slice</span>
+bp-&gt;show();      <span class="cm">// prints "Derived" ✓</span>
+br.show();       <span class="cm">// prints "Derived" ✓</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copy Ctor vs Assignment -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G3</span>
+      <span class="section-title" style="font-size:1rem">Copy Constructor vs Assignment Operator</span>
+    </div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">copy_vs_assign.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code">MyClass a;
+<span class="hi">MyClass b = a;   <span class="cm">// copy constructor  (initialisation)</span></span>
+<span class="hi">MyClass c(a);    <span class="cm">// copy constructor  (same thing)</span></span>
+
+MyClass d;
+<span class="hi">d = a;           <span class="cm">// assignment operator (d already exists)</span></span>
+
+<span class="cm">// Rule: if the object is being CREATED in the same statement,</span>
+<span class="cm">// it's ALWAYS the copy constructor, never operator=</span>
+
+<span class="cm">// Inside a function parameter:</span>
+<span class="kw">void</span> foo(MyClass x) { ... }   <span class="cm">// x created by copy constructor</span>
+foo(a);                        <span class="cm">// copy ctor called, NOT operator=</span></pre>
+    </div>
+  </div>
+
+  <!-- Virtual Destructor -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G4</span>
+      <span class="section-title" style="font-size:1rem">Virtual Destructor — Why It Matters</span>
+    </div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">virtual_destructor.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="kw">class</span> <span class="cls">Base</span> {
+<span class="kw">public</span>:
+    <span class="hi">~Base() { cout &lt;&lt; <span class="str">"~Base\n"</span>; }   <span class="cm">// NOT virtual — dangerous</span></span>
+};
+<span class="kw">class</span> <span class="cls">Derived</span> : <span class="kw">public</span> Base {
+<span class="kw">public</span>:
+    ~Derived() { cout &lt;&lt; <span class="str">"~Derived\n"</span>; }
+};
+
+Base* p = <span class="kw">new</span> Derived();
+<span class="kw">delete</span> p;
+<span class="cm">// Output: ~Base   ONLY — ~Derived never called → memory leak!</span>
+
+<span class="cm">// Fix: make base destructor virtual</span>
+<span class="hi"><span class="kw">virtual</span> ~Base() { cout &lt;&lt; <span class="str">"~Base\n"</span>; }</span>
+<span class="cm">// Now delete p → ~Derived then ~Base  ✓</span></pre>
+    </div>
+  </div>
+
+  <!-- Catch Order -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G5</span>
+      <span class="section-title" style="font-size:1rem">catch(...) Placement — Order Matters</span>
+    </div>
+    <div class="diff-grid">
+      <div>
+        <div class="diff-label bad">✗ Wrong order — error</div>
+        <div class="code-wrap">
+          <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div></div>
+          <pre class="code"><span class="kw">try</span> { <span class="kw">throw</span> <span class="str">'x'</span>; }
+<span class="kw">catch</span> (<span class="kw">int</span> e)  { ... }
+<span class="kw">catch</span> (...) { ... }   <span class="cm">// ✓</span>
+<span class="kw">catch</span> (<span class="kw">char</span> e) { ... } <span class="cm">// ✗ UNREACHABLE</span>
+<span class="cm">// catch(...) already catches everything</span>
+<span class="cm">// catch(char) after it is an error</span></pre>
+        </div>
+      </div>
+      <div>
+        <div class="diff-label good">✓ Correct order</div>
+        <div class="code-wrap">
+          <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div></div>
+          <pre class="code"><span class="kw">try</span> { <span class="kw">throw</span> <span class="str">'x'</span>; }
+<span class="kw">catch</span> (<span class="kw">int</span> e)  { ... }  <span class="cm">// specific</span>
+<span class="kw">catch</span> (<span class="kw">char</span> e) { ... }  <span class="cm">// specific</span>
+<span class="kw">catch</span> (exception&amp; e) { ... } <span class="cm">// base</span>
+<span class="kw">catch</span> (...) { ... }   <span class="cm">// catch-all LAST</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composition init order -->
+  <div style="margin-bottom:1.5rem">
+    <div class="section-header" style="margin-bottom:0.75rem;border-bottom:none;padding-bottom:0">
+      <span class="section-num" style="background:rgba(192,132,252,0.12);color:var(--purple);border-color:rgba(192,132,252,0.25)">G6</span>
+      <span class="section-title" style="font-size:1rem">Member Initialisation Order — Declaration, Not List</span>
+    </div>
+    <div class="code-wrap">
+      <div class="code-bar"><div class="code-dots"><span class="cd r"></span><span class="cd y"></span><span class="cd g"></span></div><span class="code-label">init_order_trap.cpp</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre class="code"><span class="kw">class</span> <span class="cls">Trap</span> {
+    <span class="kw">int</span> b;   <span class="cm">// declared first</span>
+    <span class="kw">int</span> a;   <span class="cm">// declared second</span>
+<span class="kw">public</span>:
+    <span class="hi">Trap() : a(<span class="num">10</span>), b(a) {}   <span class="cm">// LOOKS like b=a=10, but...</span></span>
+    <span class="cm">// Members are initialised in DECLARATION order: b first, then a</span>
+    <span class="cm">// So b = a (a is uninitialised at this point!) → undefined!</span>
+    <span class="cm">// a = 10  (correctly set)</span>
+};
+
+<span class="cm">// Fix: reorder the declarations to match intended init order</span>
+<span class="kw">class</span> <span class="cls">Fixed</span> {
+    <span class="kw">int</span> a;   <span class="cm">// declared first → initialised first</span>
+    <span class="kw">int</span> b;   <span class="cm">// declared second</span>
+<span class="kw">public</span>:
+    Fixed() : a(<span class="num">10</span>), b(a) {}   <span class="cm">// now a=10, then b=a=10 ✓</span>
+};</pre>
+    </div>
+  </div>
+
+  <!-- Quick Reference Table -->
+  <table class="ref-table">
+    <tr><th>Situation</th><th>Correct syntax / rule</th><th>Common mistake</th></tr>
+    <tr><td>Delete array</td><td><code>delete[] arr;</code></td><td><code>delete arr;</code> — UB</td></tr>
+    <tr><td>Deep copy char*</td><td><code>new char[strlen+1]; strcpy</code></td><td>Copying the pointer value</td></tr>
+    <tr><td>Friend class access</td><td>Direct <code>p.name</code> (no getter)</td><td>Thinking you need getters</td></tr>
+    <tr><td>Template static</td><td>One static per instantiation type</td><td>Thinking all share one static</td></tr>
+    <tr><td>Binary file struct</td><td><code>char name[50]</code> fixed array</td><td>Using <code>std::string</code></td></tr>
+    <tr><td>Reference member</td><td>Init in initialiser list only</td><td>Assigning in constructor body</td></tr>
+    <tr><td>Aggregation destructor</td><td>Do NOT delete the referenced object</td><td>Deleting what you don't own</td></tr>
+    <tr><td>catch ordering</td><td>Most derived → base → catch(...)</td><td>catch(...) before specific types</td></tr>
+    <tr><td>Copy ctor vs operator=</td><td><code>T b = a</code> → copy ctor (creation)</td><td>Thinking it calls operator=</td></tr>
+    <tr><td>Composition init</td><td>Initialiser list: <code>: member(args)</code></td><td>Calling member constructor in body</td></tr>
+  </table>
+
+</section>
+
+</main>
+</div><!-- /shell -->
+
+<script>
+// Navigation active state
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+
+function go(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Tab switching (namespaced)
+function switchTab(ns, name, btn) {
+  const panes = document.querySelectorAll(`[id^="${ns}-"]`);
+  const btns  = btn.closest('.tabs').querySelectorAll('.tab-btn');
+  panes.forEach(p => p.classList.remove('on'));
+  btns.forEach(b  => b.classList.remove('on'));
+  const target = document.getElementById(`${ns}-${name}`);
+  if (target) target.classList.add('on');
+  btn.classList.add('on');
+}
+
+// Copy button
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// Highlight active nav on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks  = document.querySelectorAll('.nav-link');
+const observer  = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const id = entry.target.id;
+      const match = document.querySelector(`.nav-link[onclick*="${id}"]`);
+      if (match) match.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
